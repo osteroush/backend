@@ -1,5 +1,8 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
+app.use(cors());
+app.use(express.json());
 
 const AWS = require('aws-sdk');
 const awsConfig = require('./awsConfig');
@@ -12,6 +15,13 @@ AWS.config.update({
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = 'Places';
+
+app.post('/api/v1/readTheReq', (req, res, next) => {
+    console.log('the req:');
+    console.log(req.body);
+    res.status(200).json({status: 'success'});
+    next();
+});
 
 app.use('/api/v1/dummyPopulate', async (req, res, next) => {
     const params = {
