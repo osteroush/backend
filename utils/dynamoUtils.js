@@ -10,7 +10,7 @@ exports.constructDynamoPostParamsFrom = (req, images, tableName) => {
     }
 }
 
-exports.constructDynamoPatchParamsFrom = (req, tableName) => {
+exports.constructDynamoPatchParamsFrom = (req, images, tableName) => {
     return {
         TableName: tableName,
         Key: {
@@ -18,9 +18,13 @@ exports.constructDynamoPatchParamsFrom = (req, tableName) => {
             Date: req.body.date
         },
         UpdateExpression: 'set #c = :c',
-        ExpressionAttributeNames: {'#c' : 'Comments'},
+        ExpressionAttributeNames: {
+            '#c': 'Comments',
+            '#i': 'Images'
+        },
         ExpressionAttributeValues: {
-            ':c' : req.body.comments
+            ':c': req.body.comments,
+            ':i': images
         }
     }
 }

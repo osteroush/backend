@@ -32,3 +32,26 @@ exports.constructs3ParamsFrom = (file, key) => {
         Key: key
     }
 }
+
+exports.uploadImagesTos3 = async (req, s3) => {
+    const images = [];
+    if(req?.files?.length > 0) {
+        for (const [index, file] of req.files.entries()){
+            const key = this.constructs3KeyFrom(req, file, index);
+            const s3params = this.constructs3ParamsFrom(file, key);
+            await s3.putObject(s3params).promise();
+            images.push(key);
+        };
+    }
+    return images;
+}
+
+exports.deleteImagesFroms3 = async (imagesToDelete, s3) => {
+    for(const filename of imagesToDelete) {
+        const params = {
+            Bucket: 'osteroushimages',
+            Key: filename
+        }
+        await s3.deleteObject(params).promise();
+    }
+}
