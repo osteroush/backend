@@ -27,20 +27,14 @@ const s3 = new AWS.S3({
     secretAccessKey: s3Config.secretAccessKey
 });
 
-app.post('/api/v1/place', multer().any(), async (req, res) => {
+app.post('/api/v1/place', multer().any(), async (req, res, next) => {
 
     const images = [];
-    if(req?.files?.length > 0) {
-        for (const [index, file] of req.files.entries()){
-            try {
-                const key = s3Utils.constructs3KeyFrom(req, file, index);
-                const s3params = s3Utils.constructs3ParamsFrom(file, key);
-                await s3.putObject(s3params).promise();
-                images.push(key);
-            } catch (error) {
-                res.status(400).json(err);
-            }
-        };
+    try {
+        const imageurls = await s3Utils.uploadImagesTos3(req, s3);
+        images.push(...imageurls);
+    } catch (error) {
+        return res.status(400).json({message: 'error encountered when uploading images.'});
     }
 
     try {
@@ -48,17 +42,32 @@ app.post('/api/v1/place', multer().any(), async (req, res) => {
         const response = await dynamodb.put(params).promise();
         res.status(200).json(response);
     } catch (error) {
-        res.status(400).json(error);
+        res.status(400).json({message: 'error encountered when uploading to dynamo.'});
     }    
 });
 
 app.patch('/api/v1/place', multer().any(), async (req, res) => {
+
     try {
-        const params = dynamoUtils.constructDynamoPatchParamsFrom(req, tableName);
+        await s3Utils.deleteImagesFroms3(req.body.imagesToDelete, s3);
+    } catch (error) {
+        return res.status(400).json({message: 'error encountered when updating images.'});
+    }
+
+    const images = [];
+    try {
+        const imageurls = await s3Utils.uploadImagesTos3(req, s3);
+        images.push(...imageurls);
+    } catch (error) {
+        return res.status(400).json({message: 'error encountered when uploading images.'});
+    }
+
+    try {
+        const params = dynamoUtils.constructDynamoPatchParamsFrom(req, images, tableName);
         const response = await dynamodb.update(params).promise();
         res.status(200).json(response);
     } catch (error) {
-        res.status(400).json(error);
+        return res.status(400).json({message: 'error encountered when uploading to dynamo.'});
     }
 });
 
