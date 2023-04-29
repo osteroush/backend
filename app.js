@@ -42,7 +42,7 @@ app.post('/api/v1/place', multer().any(), async (req, res, next) => {
         const response = await dynamodb.put(params).promise();
         res.status(200).json(response);
     } catch (error) {
-        res.status(400).json({message: 'error encountered when uploading to dynamo.'});
+        res.status(400).json({message: 'error encountered when uploading to dynamo.', error: error});
     }    
 });
 
@@ -71,12 +71,12 @@ app.patch('/api/v1/place', multer().any(), async (req, res) => {
     }
 });
 
-app.get('/api/v1/place/:name/:date', async (req, res) => {
+app.get('/api/v1/places/:year', async (req, res) => {
     try {
-        const params = dynamoUtils.constructDynamoGetParamsFrom(req, tableName);
-        const dynamoResponse = await dynamodb.get(params).promise();
+        const params = dynamoUtils.constructDynamoGetPlacesParamsFrom(req, tableName);
+        const dynamoResponse = await dynamodb.scan(params).promise();
         res.status(200).json(dynamoResponse);
-    } catch (error) {
+    }catch (error) {
         res.status(200).json(error);
     }
 });
