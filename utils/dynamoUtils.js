@@ -47,3 +47,14 @@ exports.constructDynamoGetPlacesParamsFrom = (req, tableName) => {
         ExpressionAttributeValues : {':year' : req.params.year}
     };
 }
+
+exports.constructDynamoLoginParamsFrom = (req) => {
+    return {
+        TableName: 'Credentials',
+        FilterExpression : 'Username = :user AND Password = :pass',
+        ExpressionAttributeValues : {
+            ':user': req.params.user,
+            ':pass': req.params.pass
+        }
+    };
+}

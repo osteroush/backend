@@ -76,8 +76,22 @@ app.get('/api/v1/places/:year', async (req, res) => {
         const params = dynamoUtils.constructDynamoGetPlacesParamsFrom(req, tableName);
         const dynamoResponse = await dynamodb.scan(params).promise();
         res.status(200).json(dynamoResponse);
-    }catch (error) {
+    } catch (error) {
         res.status(200).json(error);
+    }
+});
+
+app.get('/api/v1/login/:user/:pass', async (req, res) => {
+    try {
+        const params = dynamoUtils.constructDynamoLoginParamsFrom(req);
+        const dynamoResponse = await dynamodb.scan(params).promise();
+        if(dynamoResponse?.Items?.length > 0){
+            res.status(200).json({login:true});
+        } else {
+            res.status(200).json({login:false});
+        }
+    } catch (error) {
+        res.status(200).json(error);        
     }
 });
 
