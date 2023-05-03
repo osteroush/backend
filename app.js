@@ -40,6 +40,7 @@ app.post('/api/v1/place', multer().any(), async (req, res, next) => {
     try {
         const params = dynamoUtils.constructDynamoPostParamsFrom(req, images, tableName);
         const response = await dynamodb.put(params).promise();
+        response.success = true;
         res.status(200).json(response);
     } catch (error) {
         res.status(400).json({message: 'error encountered when uploading to dynamo.', error: error});
