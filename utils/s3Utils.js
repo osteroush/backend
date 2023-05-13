@@ -13,7 +13,7 @@ TapRoomon19th1.png
 exports.constructs3KeyFrom = (req, file, index) => {
     const lastPeriodIndex = file.originalname.lastIndexOf('.');
     const fileExtension = file.originalname.slice(lastPeriodIndex);
-    const key = req.body.name.replaceAll(/\s/g,'') + index + fileExtension;
+    const key = req.body.name.replace(/\s/g,'') + index + fileExtension;
     return key;
 }
 

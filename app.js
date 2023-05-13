@@ -4,7 +4,6 @@ const multer = require('multer');
 const app = express();
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
-
 const AWS = require('aws-sdk');
 const credentials = require('./credentials');
 const awsConfig = credentials.awsCredentials;
@@ -28,12 +27,14 @@ const s3 = new AWS.S3({
 });
 
 app.post('/api/v1/place', multer().any(), async (req, res) => {
-
+    
     const images = [];
     try {
         const imageurls = await s3Utils.uploadImagesTos3(req, s3);
         images.push(...imageurls);
     } catch (error) {
+        console.log('an error happened while uploading the images:');
+        console.log(error);
         return res.status(400).json({message: 'error encountered when uploading images.'});
     }
 
@@ -73,13 +74,14 @@ app.patch('/api/v1/place', multer().any(), async (req, res) => {
 });
 
 app.get('/api/v1/places/:year', async (req, res) => {
+    
     try {
         const params = dynamoUtils.constructDynamoGetPlacesParamsFrom(req, tableName);
         const dynamoResponse = await dynamodb.scan(params).promise();
         res.status(200).json(dynamoResponse);
     } catch (error) {
         console.log('THERE WAS AN ERROR');
-        console.log
+        console.log(error);
         res.status(200).json(error);
     }
 });
