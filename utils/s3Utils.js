@@ -35,7 +35,7 @@ exports.constructs3ParamsFrom = (file, key) => {
 
 exports.uploadImagesTos3 = async (req, s3) => {
     const images = [];
-    if(req?.files?.length > 0) {
+    if(req != null && req.files != null && req.files.length > 0) {
         for (const [index, file] of req.files.entries()){
             const key = this.constructs3KeyFrom(req, file, index);
             const s3params = this.constructs3ParamsFrom(file, key);

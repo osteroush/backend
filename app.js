@@ -27,7 +27,7 @@ const s3 = new AWS.S3({
     secretAccessKey: s3Config.secretAccessKey
 });
 
-app.post('/api/v1/place', multer().any(), async (req, res, next) => {
+app.post('/api/v1/place', multer().any(), async (req, res) => {
 
     const images = [];
     try {
@@ -78,6 +78,8 @@ app.get('/api/v1/places/:year', async (req, res) => {
         const dynamoResponse = await dynamodb.scan(params).promise();
         res.status(200).json(dynamoResponse);
     } catch (error) {
+        console.log('THERE WAS AN ERROR');
+        console.log
         res.status(200).json(error);
     }
 });
@@ -86,7 +88,7 @@ app.get('/api/v1/login/:user/:pass', async (req, res) => {
     try {
         const params = dynamoUtils.constructDynamoLoginParamsFrom(req);
         const dynamoResponse = await dynamodb.scan(params).promise();
-        if(dynamoResponse?.Items?.length > 0){
+        if(dynamoResponse != null && dynamoResponse.Items != null && dynamoResponse.Items.length > 0){
             res.status(200).json({login:true});
         } else {
             res.status(200).json({login:false});
@@ -104,14 +106,6 @@ app.delete('/api/v1/place/:name/:date', async (req, res) => {
     } catch (error) {
         res.status(200).json(error);
     }
-});
-
-app.use('/api/v1/test', (req, res, next) => {
-    const testResponse = {
-        name: 'test',
-        value: 'successful'
-    }
-    res.status(200).json(testResponse);
 });
 
 module.exports = app;
