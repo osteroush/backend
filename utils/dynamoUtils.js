@@ -34,8 +34,7 @@ exports.constructDynamoDeleteParamsFrom = (req, tableName) => {
     return {
         TableName: tableName,
         Key: {
-            'PlaceName': req.params.name,
-            'DateVisited': req.params.date,
+            'PlaceName': req.body.PlaceName
         }
     };
 }

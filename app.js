@@ -94,10 +94,18 @@ app.get('/BackEnd/api/v1/login/:user/:pass', async (req, res) => {
     }
 });
 
-app.delete('/BackEnd/api/v1/place/:name/:date', async (req, res) => {
+app.delete('/BackEnd/api/v1/place/', async (req, res) => {
+    if(req.body?.Images?.length > 0) {
+        try {
+            await s3Utils.deleteImagesFroms3(req.body.Images, s3);
+        } catch (error) {
+            res.status(400).json({message: 'error encountered when deleting images.', error: error});
+        }
+    }
     try {
         const params = dynamoUtils.constructDynamoDeleteParamsFrom(req, tableName);
         const deleteResponse = await dynamodb.delete(params).promise();
+        deleteResponse.success = true;
         res.status(200).json(deleteResponse);
     } catch (error) {
         res.status(200).json(error);
