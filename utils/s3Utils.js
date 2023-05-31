@@ -53,15 +53,13 @@ exports.deleteImagesFroms3 = async (imagesToDelete, s3) => {
             Objects: []
         }
     }
-    console.log('s3Utils.deleteImagesFroms3 called');
+    
     for(const toDelete of imagesToDelete) {
         const toAdd = {
             Key: toDelete
         }
         params.Delete.Objects.push(toAdd);
     }
-    console.log('s3Utils.deleteImagesFroms3 created params:');
-    console.log(params);
     await s3.deleteObjects(params).promise();
     
 }
