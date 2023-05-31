@@ -95,7 +95,7 @@ app.get('/BackEnd/api/v1/login/:user/:pass', async (req, res) => {
 });
 
 app.delete('/BackEnd/api/v1/place/', async (req, res) => {
-    if(req.body?.Images?.length > 0) {
+    if(req && req.body && req.body.Images && req.body.Images.length > 0) {
         try {
             await s3Utils.deleteImagesFroms3(req.body.Images, s3);
         } catch (error) {
