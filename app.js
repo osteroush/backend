@@ -9,6 +9,7 @@ const credentials = require('./credentials');
 const awsConfig = credentials.awsCredentials;
 const s3Config = credentials.s3Credentials;
 const s3Utils = require('./utils/s3Utils');
+const arrayUtils = require('./utils/arrayUtils');
 const dynamoUtils = require('./utils/dynamoUtils');
 
 AWS.config.update({
@@ -46,14 +47,39 @@ app.post('/BackEnd/api/v1/place', multer().any(), async (req, res) => {
 });
 
 app.patch('/BackEnd/api/v1/place', multer().any(), async (req, res) => {
+    const imagesArray = [];
+    const toDeleteArray = [];
+
+    if(req.body.images && req.body.images.length > 0) {
+        imagesArray.push(...JSON.parse(req.body.images));
+    }
+    if(req.body.imagesToDelete && req.body.imagesToDelete.length > 0) {
+        toDeleteArray.push(...JSON.parse(req.body.imagesToDelete));
+    }
 
     try {
-        await s3Utils.deleteImagesFroms3(req.body.imagesToDelete, s3);
+        if(toDeleteArray.length > 0) {
+            await s3Utils.deleteImagesFroms3(req.body.imagesToDelete, s3);
+        }
     } catch (error) {
         res.status(400).json({message: 'error encountered when updating images.', error: error});
     }
 
     const images = [];
+
+    if(imagesArray.length > 0 && toDeleteArray.length > 0) {
+        const toAdds = arrayUtils.removeElementsOf(toDeleteArray, imagesArray);
+        for(const toAdd of toAdds){
+            images.push(toAdd);
+        }
+    }
+
+    if(imagesArray.length > 0 && toDeleteArray.length < 1) {
+        for(const toAdd of imagesArray){
+            images.push(toAdd);
+        }
+    }
+
     try {
         const imageurls = await s3Utils.uploadImagesTos3(req, s3);
         images.push(...imageurls);
@@ -64,6 +90,7 @@ app.patch('/BackEnd/api/v1/place', multer().any(), async (req, res) => {
     try {
         const params = dynamoUtils.constructDynamoPatchParamsFrom(req, images, tableName);
         const response = await dynamodb.update(params).promise();
+        response.success = true;
         res.status(200).json(response);
     } catch (error) {
         res.status(400).json({message: 'error encountered when uploading to dynamo.', error: error});

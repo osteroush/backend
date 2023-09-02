@@ -1,3 +1,5 @@
+const { v4: uuidv4 } = require('uuid');
+
 /*
 constructs a Key which uses the Name field in the
 Place Table in Dynamo, along with the index, and
@@ -37,7 +39,22 @@ exports.uploadImagesTos3 = async (req, s3) => {
     const images = [];
     if(req != null && req.files != null && req.files.length > 0) {
         for (const [index, file] of req.files.entries()){
-            const key = this.constructs3KeyFrom(req, file, index);
+            const key = uuidv4();
+            const s3params = this.constructs3ParamsFrom(file, key);
+            await s3.putObject(s3params).promise();
+            images.push(key);
+        };
+    }
+    return images;
+}
+
+exports.uploadNewImagesTos3 = async (req, s3) => {
+    const images = [];
+    if(req != null && req.files != null && req.files.length > 0) {
+        let indexToUse = Number(req.body.lastImageIndex);
+        for (const [index, file] of req.files.entries()){
+            const key = this.constructs3KeyFrom(req, file, indexToUse);
+            indexToUse++;
             const s3params = this.constructs3ParamsFrom(file, key);
             await s3.putObject(s3params).promise();
             images.push(key);
@@ -53,8 +70,8 @@ exports.deleteImagesFroms3 = async (imagesToDelete, s3) => {
             Objects: []
         }
     }
-    
-    for(const toDelete of imagesToDelete) {
+    const toDeleteArray = JSON.parse(imagesToDelete);
+    for(const toDelete of toDeleteArray) {
         const toAdd = {
             Key: toDelete
         }

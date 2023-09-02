@@ -1,4 +1,8 @@
 exports.constructDynamoPostParamsFrom = (req, images, tableName) => {
+    let lastImageIndex = 0;
+    if(images && images.length > 0) {
+        lastImageIndex = images.length;
+    }
     return {
         TableName: tableName,
         Item: {
@@ -6,7 +10,8 @@ exports.constructDynamoPostParamsFrom = (req, images, tableName) => {
             MonthVisited: req.body.month,
             YearVisited: req.body.year,
             Comments: req.body.comments,
-            Images: images
+            Images: images,
+            LastImageIndex: lastImageIndex
         }
     }
 }
@@ -15,10 +20,9 @@ exports.constructDynamoPatchParamsFrom = (req, images, tableName) => {
     return {
         TableName: tableName,
         Key: {
-            PlaceName: req.body.name,
-            DateVisited: req.body.date
+            PlaceName: req.body.name
         },
-        UpdateExpression: 'set #c = :c',
+        UpdateExpression: 'set #c = :c, #i = :i',
         ExpressionAttributeNames: {
             '#c': 'Comments',
             '#i': 'Images'
